@@ -1,0 +1,122 @@
+https://www.browserstack.com/guide/extent-reports-in-selenium
+
+PREREQUISITES:
+	jar file		https://jar-download.com/?search_box=extentreports-2.41.2+jar
+	chromedriver	https://chromedriver.chromium.org/downloads
+
+How to Generate Extent Reports in Selenium
+What are Extent Reports?
+Once an automated test script runs successfully, testers need to generate a test execution report. While TestNG testing framework does provide a default report, they do not provide the detail and easy readability of Extent Reports in Selenium WebDriver.
+ExtentReports is an open-source reporting library useful for test automation. It can also be easily integrated with major testing frameworks like JUnit, NUnit, TestNG, etc. These reports are HTML rich documents that depict results as pie charts. They also allow the generation of custom logs, snapshots, and other customized details.
+Advantages of using Extent Reports
+	•	Rich HTML reports that can be customized to offer a graphical representation of each step.
+	•	Depicts the time required for test execution.
+	•	If required, screenshots can be taken and displayed for each step in a test.
+	•	Allows easy tracking of multiple test case runs in a single test suite.
+	•	Easy to integrate with numerous frameworks, especially TestNG and JUnit.
+Using Extent Reports in Selenium
+Extent Reports in Selenium contain two major, frequently used classes:
+	•	ExtentReports class
+	•	ExtentTest class
+Syntax
+ExtentReports reports = new ExtentReports("Path of directory to store the resultant HTML file", true/false);
+
+ExtentTest test = reports.startTest("TestName");
+The first, ExtentReports class generates HTML reports based on a user-specified path. The Boolean flag notes if the existing report needs to be overwritten or a completely new report needs to be generated. ‘True’ is the default value, which indicates that all existing data will be overwritten.
+The second, ExtentTest class is required in order to log test steps onto the previously generated HTML report.
+Both these classes can be used with a number of frequently used built-in methods:
+	•	startTest
+	•	endTest
+	•	Log
+	•	flush
+startTest and endTest methods are utilized to execute preconditions and postconditions of a test case. The log method is utilized to log the status of each test step onto the resultant HTML report. The flush method is used to erase any previous data on a relevant report and create a whole new report.
+A Test Status can be denoted by any of the following values:
+	•	PASS
+	•	FAIL
+	•	SKIP
+	•	INFO
+Syntax
+reports.endTest();
+test.log(LogStatus.PASS,"Test Passed");
+test.log(LogStatus.FAIL,"Test Failed");
+test.log(LogStatus.SKIP,"Test Skipped");
+test.log(LogStatus.INFO,"Test Info");
+The Log method takes into account two parameters, the first being the test status and the second being the message to be printed onto the generated report.
+How to generate Extent Reports (with code samples)
+	•	Import the JAR file: extentreports-java-2.41.2.jar. Download the file.
+		https://jar-download.com/?search_box=extentreports-2.41.2+jar 
+		After downloading the ZIP file, extract its contents into a folder.
+	•	Add the JAR files to the project build path with the option Build Path -> Configure Build Path.
+ Image Source
+	•	Create a new JAVA class for Extent Reports by using the code below.
+package com.browserstack.demo;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import com.relevantcodes.extentreports.ExtentReports;
+import com.relevantcodes.extentreports.ExtentTest;
+import com.relevantcodes.extentreports.LogStatus;
+public class ExtentDemo {
+static ExtentTest test;
+static ExtentReports report;
+@BeforeClass
+public static void startTest()
+{
+report = new ExtentReports(System.getProperty("user.dir")+"\\ExtentReportResults.html");
+test = report.startTest("ExtentDemo");
+}
+@Test
+public void extentReportsDemo()
+{
+System.setProperty("webdriver.chrome.driver", “<chromedriver.exe>”);
+WebDriver driver = new ChromeDriver();
+driver.get("https://www.google.co.in");
+if(driver.getTitle().equals("Google"))
+{
+test.log(LogStatus.PASS, "Navigated to the specified URL");
+}
+else
+{
+test.log(LogStatus.FAIL, "Test Failed");
+}
+}
+@AfterClass
+public static void endTest()
+{
+report.endTest(test);
+report.flush();
+}
+}
+In the code above, test execution commences with the startTest method. It also initializes the Extent Reports object. Any valid user defined path can serve as the parameter that is passed onto the Extent Reports object.
+The example uses the current project directory to generate the HTML report. The next statement initializes the ExtentTest object with the return value of the startTest method.
+@Test: This class automates the following actions:
+	•	Open Chrome browser with the url https://www.google.com
+	•	Validate page title with the expected value once the page opens.
+	•	Log the test case status as PASS/FAIL using the log method of Extent Reports.
+@AfterClass: This includes the code that will execute the postconditions of the test case like ending the test (using endTest method) and flushing the report. Be sure to use the flush() method, since the report will not be generated otherwise.
+How to capture screenshots in Extent Report?
+By capturing screenshots, testers can better identify bugs since they can detect every issue encountered during test execution. However, since the screenshots consume quite a bit of memory, it is best to capture them only if a test fails.
+Try capturing screenshots with the code below
+test.log(LogStatus.FAIL,test.addScreenCapture(capture(driver))+ "Test Failed");
+public static String capture(WebDriver driver) throws IOException {
+File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+File Dest = new File("src/../BStackImages/" + System.currentTimeMillis()
++ ".png");
+String errflpath = Dest.getAbsolutePath();
+FileUtils.copyFile(scrFile, Dest);
+return errflpath;
+}
+getScreenShotAs(): used to capture screenshot of the current WebDriver instance and store it in different output forms.
+File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+getScreenShotAs method returns a file object that must be stored onto a file variable. Casting the web driver instance to Take Screenshot is mandatory if the method is to be used.
+File Dest = new File("src/../BStackImages/" + System.currentTimeMillis()+ ".png");
+This statement creates a folder named ‘BStackImages’ within the ‘src’ folder and stores the file name as the current system time.
+String errflpath = Dest.getAbsolutePath();
+FileUtils.copyFile(scrFile, Dest);
+returnerrflpath;
+These statements copy error images to the destination folder.
+Use the log method because it, in turn, uses the built-in method, addScreenCapture of Extent Test class to fetch a screenshot and append it to the Extent Report.
+test.log(LogStatus.FAIL,test.addScreenCapture(capture(driver))+ "Test Failed");
+Try using the code defined above to generate Extent Reports. By doing so, users can offer themselves and their teams, a more extensive and insightful perspective on the success or failure of their automated Selenium testing. By accessing the greater detail provided by Extent Reports, testers can be more effective when it comes to debugging software quickly.
